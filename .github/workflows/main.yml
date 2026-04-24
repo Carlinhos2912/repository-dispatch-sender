@@ -1,0 +1,29 @@
+name: dispatch_sender
+on:
+  push:
+    branches:
+      - main
+      - test
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Notify deploy repo
+      uses: peter-evans/repository-dispatch@v4
+      with:
+        token: ${{ secrets.DEPLOY_PAT }}
+        repository: org/deploy-repo
+        event-type: image-published
+        client-payload: |
+          {
+            "image": "myapp",
+            "tag": "test-${{ github.sha }}",
+            "environment": "preview"
+          }
+
+    
+  
