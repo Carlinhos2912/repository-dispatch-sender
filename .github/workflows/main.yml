@@ -7,11 +7,24 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
     
+    outputs:
+      tag-name: ${{  steps.generate_tag.outputs.tag-name  }}
+      
+    steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: Generate tag
+      id: generate_tag
+      run: echo "tag-name=test-${{ github.sha }}" >> "$GITHUB_OUTPUT"
       
+  dispatch:
+    runs-on: ubuntu-latest
+    
+    needs: build
+    
+    steps:  
     - name: Notify deploy repo
       uses: peter-evans/repository-dispatch@v4
       with:
@@ -21,7 +34,7 @@ jobs:
         client-payload: |
           {
             "image": "myapp",
-            "tag": "test-${{ github.sha }}",
+            "tag": "${{  needs.build.outputs.tag-name  }}",
             "environment": "preview"
           }
 
